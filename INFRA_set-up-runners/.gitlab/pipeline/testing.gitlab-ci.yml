@@ -1,0 +1,48 @@
+# -----------------------------
+# Testing
+#
+# Jobs to build code and deploy to the testing envrioments
+# -----------------------------
+
+# -----------------------------
+# Rules
+# -----------------------------
+.testing:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_ENVIRONMENT_NAME == "testing" && $CI_JOB_STAGE == "deploy"
+      when: manual
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_ENVIRONMENT_NAME == "testing"
+
+# -----------------------------
+# Build
+# -----------------------------
+testing-build:
+  extends:
+    - .setup
+    - .testing
+  stage: build
+  script:
+    - npm run build
+    - npx cdk synth
+
+# -----------------------------
+# Create Change Set
+# -----------------------------
+testing-changeset:
+  extends:
+    - .setup
+    - .testing
+  stage: changeset
+  script:
+    - npx cdk diff LABTestingStack --asset-parallelism=false
+
+# -----------------------------
+# Deploy
+# -----------------------------
+testing-deploy:
+  extends:
+    - .setup
+    - .testing
+  stage: deploy
+  script:
+    - npx cdk deploy LABTestingStack --require-approval never --verbose

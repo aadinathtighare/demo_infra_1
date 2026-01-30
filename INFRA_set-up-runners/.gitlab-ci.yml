@@ -1,0 +1,17 @@
+include:
+  - .gitlab/setup/setup.gitlab-ci.yml
+  - .gitlab/pipeline/security.gitlab-ci.yml
+  - .gitlab/pipeline/prerelease.gitlab-ci.yml
+  - .gitlab/pipeline/production.gitlab-ci.yml
+  - .gitlab/pipeline/testing.gitlab-ci.yml
+  - .gitlab/pipeline/support.gitlab-ci.yml
+  - .gitlab/pipeline/dev.gitlab-ci.yml
+
+
+stages:
+  - build
+  - changeset
+  - deploy
+
+default:
+  image: node:24

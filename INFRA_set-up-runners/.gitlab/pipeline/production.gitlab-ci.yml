@@ -1,0 +1,50 @@
+# -----------------------------
+# Production
+#
+# Jobs to build code and deploy to the production envrioment
+# -----------------------------
+
+# -----------------------------
+# Rules
+# -----------------------------
+.production:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_ENVIRONMENT_NAME == "production" && $CI_JOB_STAGE == "deploy"
+      when: manual
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_ENVIRONMENT_NAME == "production"
+
+
+# -----------------------------
+# Build
+# -----------------------------
+production-build:
+  extends:
+    - .setup
+    - .production
+  stage: build
+  script:
+    - npm run build
+    - npx cdk synth
+
+# -----------------------------
+# Create Change Set
+# -----------------------------
+production-changeset:
+  extends:
+    - .setup
+    - .production
+  stage: changeset
+  script:
+    - npx cdk diff LABProductionStack --asset-parallelism=false
+
+# -----------------------------
+# Deploy
+# -----------------------------
+production-deploy:
+  extends:
+    - .setup
+    - .production
+  stage: deploy
+  script:
+    - npx cdk deploy LABProductionStack --require-approval never --verbose
+

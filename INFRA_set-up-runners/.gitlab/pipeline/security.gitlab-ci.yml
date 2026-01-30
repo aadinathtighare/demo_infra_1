@@ -1,0 +1,48 @@
+# -----------------------------
+# Security
+#
+# Jobs to build code and deploy to the security envrioment
+# -----------------------------
+
+# -----------------------------
+# Rules
+# -----------------------------
+.security:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_ENVIRONMENT_NAME == "security" && $CI_JOB_STAGE == "deploy"
+      when: manual
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_ENVIRONMENT_NAME == "security"
+
+# -----------------------------
+# Build
+# -----------------------------
+security-build:
+  extends:
+    - .setup
+    - .security
+  stage: build
+  script:
+    - npm run build
+    - npx cdk synth
+
+# -----------------------------
+# Create Change Set
+# -----------------------------
+security-changeset:
+  extends:
+    - .setup
+    - .security
+  stage: changeset
+  script:
+    - npx cdk diff LABSecurityStack --asset-parallelism=false --verbose
+
+# -----------------------------
+# Deploy
+# -----------------------------
+security-deploy:
+  extends:
+    - .setup
+    - .security
+  stage: deploy
+  script:
+    - npx cdk deploy LABSecurityStack --require-approval never --verbose

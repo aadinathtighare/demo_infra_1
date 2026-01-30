@@ -1,0 +1,5 @@
+# Configuration for Prettier code formatter
+trailingComma: 'es5'
+tabWidth: 4
+semi: false
+singleQuote: true

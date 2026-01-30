@@ -1,0 +1,48 @@
+# -----------------------------
+# dev
+#
+# Jobs to build code and deploy to the dev envrioment
+# -----------------------------
+
+# ------------------------------
+# Rules
+# ------------------------------
+.dev:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_ENVIRONMENT_NAME == "dev" && $CI_JOB_STAGE == "deploy"
+      when: manual
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_ENVIRONMENT_NAME == "dev"
+
+# -----------------------------
+# Build
+# -----------------------------
+dev-build:
+  extends:
+    - .setup
+    - .dev
+  stage: build
+  script:
+    - npm run build
+    - npx cdk synth
+
+# -----------------------------
+# Create Change Set
+# -----------------------------
+dev-changeset:
+  extends:
+    - .setup
+    - .dev
+  stage: changeset
+  script:
+    - npx cdk diff Runners-BBDeDev --asset-parallelism=false
+
+# -----------------------------
+# Deploy
+# -----------------------------
+dev-deploy:
+  extends:
+    - .setup
+    - .dev
+  stage: deploy
+  script:
+    - npx cdk deploy Runners-BBDeDev --require-approval never --verbose

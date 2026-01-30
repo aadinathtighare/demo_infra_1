@@ -1,0 +1,48 @@
+# -----------------------------
+# Support
+#
+# Jobs to build code and deploy supporting AWS resources outside of the platform architecture
+# -----------------------------
+
+# -----------------------------
+# Rules
+# -----------------------------
+.support:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_ENVIRONMENT_NAME == "support" && $CI_JOB_STAGE == "deploy"
+      when: manual
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_ENVIRONMENT_NAME == "support"
+
+# -----------------------------
+# Build
+# -----------------------------
+support-build:
+  extends:
+    - .setup
+    - .support
+  stage: build
+  script:
+    - npm run build
+    - npx cdk synth
+
+# -----------------------------
+# Create Change Set
+# -----------------------------
+support-changeset:
+  extends:
+    - .setup
+    - .support
+  stage: changeset
+  script:
+    - npx cdk diff LABSupportStack --asset-parallelism=false
+
+# -----------------------------
+# Deploy
+# -----------------------------
+support-deploy:
+  extends:
+    - .setup
+    - .support
+  stage: deploy
+  script:
+    - npx cdk deploy LABSupportStack --require-approval never --verbose

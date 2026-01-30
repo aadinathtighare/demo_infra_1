@@ -1,0 +1,48 @@
+# -----------------------------
+# Prerelease
+#
+# Jobs to build code and deploy to the prerelease envrioment
+# -----------------------------
+
+# ------------------------------
+# Rules
+# ------------------------------
+.prerelease:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_ENVIRONMENT_NAME == "prerelease" && $CI_JOB_STAGE == "deploy"
+      when: manual
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_ENVIRONMENT_NAME == "prerelease"
+
+# -----------------------------
+# Build
+# -----------------------------
+prerelease-build:
+  extends:
+    - .setup
+    - .prerelease
+  stage: build
+  script:
+    - npm run build
+    - npx cdk synth
+
+# -----------------------------
+# Create Change Set
+# -----------------------------
+prerelease-changeset:
+  extends:
+    - .setup
+    - .prerelease
+  stage: changeset
+  script:
+    - npx cdk diff LABPrereleaseStack --asset-parallelism=false
+
+# -----------------------------
+# Deploy
+# -----------------------------
+prerelease-deploy:
+  extends:
+    - .setup
+    - .prerelease
+  stage: deploy
+  script:
+    - npx cdk deploy LABPrereleaseStack --require-approval never --verbose

@@ -1,0 +1,12 @@
+# -----------------------------
+# Setup
+# -----------------------------
+
+.setup:
+  image: node:18
+  before_script:
+    - cd cdk
+    - npm uninstall -g aws-cdk
+    - npm install -g aws-cdk@latest
+    - npm install
+    - npm ci
